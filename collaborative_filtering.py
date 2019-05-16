@@ -61,11 +61,11 @@ def tune_ALS(train_data, validation_data, maxIter, regParams, ranks):
   return best_model
 # Find best model tuning (only needed to do once)
 # model = tune_ALS(training, test, 20, [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09], range(1,20))
-als = ALS(maxIter=20, regParam=, rank=, userCol="user_id", itemCol="item_id", ratingCol="rating", coldStartStrategy="drop")
+als = ALS(maxIter=20, regParam=0.09, rank=11, userCol="user_id", itemCol="item_id", ratingCol="rating", coldStartStrategy="drop")
 model = als.fit(train_data)
 
 # Find top reccomended items for each user
 userRecs = model.recommendForAllUsers(10)
 
 # save recommendations to file
-userRecs.write.csv("./user_recommendations.csv", header=True, mode="overwrite")
+userRecs.write.csv(sys.args[3], header=True, mode="overwrite")
