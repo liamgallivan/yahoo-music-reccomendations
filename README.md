@@ -1,6 +1,8 @@
 # yahoo-music-reccomendations
 Data mining project using anonymous user rating data from Yahoo competition data
 
+Authors: Liam Gallivan and Tyler Wong
+
 ## File Descriptions
 
 ### data-processing.r
