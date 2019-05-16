@@ -1,14 +1,17 @@
-from pyspark.sql import functions as f
 '''
-path = '~/code/yahoo-music-recommendations/data'
+Description:
+Transforms data from yahoo into correct format for CF training
+- skewness and numbers to undersample by found in R code preproccessing.R
+- undersamples training data, does not for validation data
 
-input_artists = paste(path, "/artistData1.txt", sep="")
-input_albums = paste(path, "/albumData1.txt", sep="")
-input_genres = paste(path, "/genreData1.txt", sep="")
-input_tracks = paste(path, "/trackData1.txt", sep="")
-input_stats = paste(path, "/stats1.txt", sep="")
-input_train_file = paste(path, "/testIdx1.txt", sep="")
+Inputs: training and validation data
+outputs: csv in format "<ItemID>,<Rating>,<UserID>" for training and validation set
+
 '''
+import sys
+from pyspark.sql import functions as f
+from pyspark.sql import SparkSession
+from pyspark import SparkContext
 
 def map_ratings(row):
   x = {}
@@ -26,7 +29,7 @@ def map_ratings(row):
     x['rating'] = 5
   return x
 
-def preprocess_file(input_file_name):
+def preprocess_file(input_file_name, spark, sample=True):
     ratings = []
     with open(input_file_name, "r") as fp:
       line = fp.readline()
@@ -43,22 +46,35 @@ def preprocess_file(input_file_name):
     # skewness
     # skewness = df.agg(f.skewness("rating"))
     # skewness.show()
-    n = 300000
     rdd1 = df.rdd.map(map_ratings)
     df2 = spark.createDataFrame(rdd1)
-    sampled = df2.sampleBy(
-            "rating", 
-            fractions={
-                1: 0.334, 
-                2: 1, 
-                3: 0.5930, 
-                4: 0.30258, 
-                5: 0.0899145}, 
-            seed=0)
-    # skewness
-    skewness = sampled.agg(f.skewness("rating"))
-    skewness.show()
-    return sampled
+    if sample is True:
+      sampled = df2.sampleBy(
+              "rating", 
+              fractions={
+                  1: 0.334, 
+                  2: 1, 
+                  3: 0.5930, 
+                  4: 0.30258, 
+                  5: 0.0899145}, 
+              seed=0)
+      # skewness
+      skewness = sampled.agg(f.skewness("rating"))
+      skewness.show()
+      #+--------------------+
+      #|    skewness(rating)|
+      #+--------------------+
+      #|-8.24123249452558E-5|
+      return sampled
+    else:
+      return df2
 
 if __name__ == '__main__':
-    preprocess_file("/Users/Liam/code/yahoo-music-recommendations/data/testIdx1.txt")
+    sc = SparkContext("local", "preprocess_file")
+    spark = SparkSession(sc)
+    sampled_data = preprocess_file(sys.args[1], spark)
+    sampled_data.write.csv(sys.args[2])
+    validation_data = preprocess_file(sys.args[3], spark, False)
+    validation_data.write.csv(sys.args[4])
+
+

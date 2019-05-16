@@ -1,0 +1,14 @@
+UserId|numRatings
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+... numRatings # of below entries
+UserId|numRatings
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+ItemId	rating	time_info
+... numRatings # of below entries
