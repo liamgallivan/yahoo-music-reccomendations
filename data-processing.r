@@ -1,53 +1,49 @@
+path = '~/Desktop/Webscope_C15/ydata-ymusic-kddcup-2011-track1'
 
-library(Matrix)
+input_artists = paste(path, "/artistData1.txt", sep="")
+input_albums = paste(path, "/albumData1.txt", sep="")
+input_genres = paste(path, "/genreData1.txt", sep="")
+input_tracks = paste(path, "/trackData1.txt", sep="")
+input_stats = paste(path, "/stats1.txt", sep="")
+input_train_file = paste(path, "/testIdx1.txt", sep="")
 
-input_dir = '~/code/yahoo-music-recommendations/data'
 
-input_artists = paste(input_dir, "/artistData1.txt", sep="")
-input_albums = paste(input_dir, "/albumData1.txt", sep="")
-input_genres = paste(input_dir, "/genreData1.txt", sep="")
-input_tracks = paste(input_dir, "/trackData1.txt", sep="")
-input_stats = paste(input_dir, "/stats1.txt", sep="")
-input_train_file = paste(input_dir, '/testIdx1.txt', sep="")
+#[(u1,s1,r), (u2,s2,r)]
+#u1,[(s1,r),(s2,3),(s10,r)] -> get all the songs that user 1 has rated 
+#u2,[...]
+#sim()
 
-# todo: plot statistics and histograms
-#       - ratings 0 - 100
 
-# todo:  fix skewness
+#s2[(u1,r),(u10,r)...]
 
-# todo: CB model collaborative filtering
-#       - generate matrix
-conn <- file(input_train_file,open="r")
-lines <- readLines(conn)
-user_ids <- c()
-item_ids <- c()
+songs <- read.table(input_train_file, sep="", 
+                     header=FALSE, 
+                     comment.char = "",
+                     quote="", fill=TRUE)
 
-rating_table <- data.frame(item_id=c(), user_id=c(), rating=c())
-# (u1, s1, r)
-# groupby u1 [(m1, r), (m2, r)]
+x <- c("item", "rating", "time")
+colnames(songs) = x
 
-# RMSE
-# precision = #found / all
-# recall at 5 = # found at 5 / all at 5
-i <- 1
-while (i < length(lines)  i < 1000) {
-  info <- lines[i].strsplit("|")
-  user_id <- as.numeric(info[0])
-  num_ratings <- as.numeric(info[1])
-  ratings_vec <- c()
-  item_vec <- c()
-  for (current_rating in 1:num_ratings) {
-    i <- i + 1
-    rating_info <- strsplit(lines[i], "\\s+")
-    item_rating <- as.numeric(rating_info[1])
-    item_id <- as.numeric(rating_info[0])
-    append(ratings_vec, item_rating)
-    append(item_vec, item_id)
-  }
-  
-  new_frame = data.frame(item_id=item_vec, user_id=rep(c(user_id), times=num_ratings), rating=ratings_vec)
-  rating_table = rbind(rating_table, new_frame)
-  i <- i + 1
-}
+summary(songs)
 
-close(conn)
+hist(songs$rating)
+
+library(e1071)
+
+myclass = songs$rating
+skewness(myclass,na.rm = TRUE,type=2)
+
+hist(songs$rating)
+
+#install.packages("ggpubr")
+library(ggpubr)
+
+songs_by_item <- group_by(songs, rating)
+head(songs_by_item)
+
+#Clean the NA values -> actually remove them from the dataset
+#precision
+
+n = 300000
+sample(1:nrow(songs[songs$rating <= 20]),n)
+sample(1:nrow(songs))
